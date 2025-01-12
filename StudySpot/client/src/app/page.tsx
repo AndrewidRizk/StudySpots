@@ -5,7 +5,7 @@ import Header from './components/Header';
 import LoadingIndicator from './components/LoadingIndicator';
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-
+import { Analytics } from "@vercel/analytics/react"
 
 // Slot interface definition
 interface Slot {
@@ -372,6 +372,7 @@ export default function HomePage() {
         <div className={styles.container}>
             {/* Header component */}
             <Header />
+            <Analytics />
 
             {/* Loading component */}
             {isLoading && <LoadingIndicator />}
