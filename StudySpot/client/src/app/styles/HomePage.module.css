@@ -188,7 +188,7 @@
 
 /* Highlight when the user hovers over the building summary */
 .buildingSummary:hover {
-    background-color: #505050;
+    background-color: lightgrey;
 }
 
 .section {
@@ -215,7 +215,7 @@
 }
 
 .cafeRow:hover, .libraryRow:hover{
-    background-color: #505050;
+    background-color: lightgrey;
 }
 
 
@@ -340,4 +340,3 @@
         margin-left: 10px;
     }
 }
-
