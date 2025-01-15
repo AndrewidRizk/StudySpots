@@ -6,8 +6,8 @@
     background-color: #f4f4f5;
     color: #333333; /* Dark text for contrast */
     font-family: 'Inter', sans-serif; /* ChatGPT-like font */
-    /* margin-top: 50px;
-    margin-bottom: 50px; */
+    overflow-x: hidden;
+    min-height: 100vh; /* Change this when you are editing the width of the map and the left container */
 }
 
 .statusLabel {

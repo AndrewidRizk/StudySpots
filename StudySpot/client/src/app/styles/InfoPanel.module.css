@@ -1,0 +1,51 @@
+.infoPanel {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+  }
+  
+  .icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #333333;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+  
+  .icon:hover {
+    transform: scale(1.1);
+  }
+  
+  .dropdown {
+    position: absolute;
+    top: 30px; /* Adjust based on the icon size */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-size: 14px;
+    color: #333;
+    z-index: 10;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+  }
+  
+  .infoPanel:hover .dropdown {
+    opacity: 1;
+    visibility: visible;
+  }
+  

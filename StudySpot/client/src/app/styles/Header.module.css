@@ -13,8 +13,14 @@
     font-size: 35px; /* Adjust font size as needed */
     display: flex;
     align-items: center; /* Vertically align text with logo */
+    text-align: center;
 }
-
+.highlight {
+    background-color: red; /* Background color for "YU" */
+    color: white; /* Text color inside the highlighted area */
+    padding: 0 2px; /* Add spacing around the text for a cleaner look */
+    border-radius: 4px; /* Optional: rounded corners for the highlight */
+  }
 /* For larger screens, align the header to the left */
 @media (min-width: 768px) {
     .header {
