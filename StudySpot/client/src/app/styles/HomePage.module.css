@@ -7,8 +7,25 @@
     color: #333333; /* Dark text for contrast */
     font-family: 'Inter', sans-serif; /* ChatGPT-like font */
     overflow-x: hidden;
-    min-height: 100vh; /* Change this when you are editing the width of the map and the left container */
+    flex-direction: column; /* Stack items vertically */
+    min-height: 100vh; /* Minimum height of the viewport */
+    height: 100%;
+    display: flex;
+    height: 100vh; /* Full height of the screen */
+    width: 100%; /* Use the full width of the screen */
 }
+
+/* Footer example */
+.footer {
+    width: 100%;
+    padding: 1px;
+    background-color: #f5f5f5;
+    text-align: center;
+    min-height: 5vh; /* Minimum height of the viewport */
+    
+}
+
+
 
 .statusLabel {
     margin-left: 1rem;
@@ -274,12 +291,7 @@
     transition: background-color 0.3s ease; /* Smooth transition for the background color */
 }
 
-.container {
-    display: flex;
-    flex-direction: column; /* Keeps the header on top */
-    height: 100vh; /* Full height of the screen */
-    width: 100%; /* Use the full width of the screen */
-}
+
 
 .studySpotsContainer {
     display: flex; /* Make the study spots and map side-by-side */
@@ -353,6 +365,11 @@
         border: 1px solid #e5e7eb; /* Optional: Add a border for structure */
         margin-right: 10px;
     }
+    .hiddenContainer {
+        box-shadow: none; /* Remove the shadow */
+        border: none; /* Remove the border */
+        background-color: transparent; /* Make the container background transparent */
+    }
     .map {
         width: 100%; /* Ensure the map spans the full width */
         height: 100%; /* Ensure the map takes up the container's height */
@@ -360,4 +377,6 @@
     .sectionTitle{
         margin-left: 10px;
     }
+
+
 }

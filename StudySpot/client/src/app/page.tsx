@@ -39,7 +39,7 @@ export default function HomePage() {
     const [currentTime, setCurrentTime] = useState<string>("");
     const [openBuildingIndex, setOpenBuildingIndex] = useState<string | null>(null); // Use building ID instead of index
     const [dataLoaded, setDataLoaded] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [userLocation, setUserLocation] = useState<{ latitude: number | null, longitude: number | null }>({ latitude: null, longitude: null });
     const mapContainerRef = useRef<HTMLDivElement | null>(null); // Reference for the map container
     const mapRef = useRef<mapboxgl.Map | null>(null); // Store map instacne
@@ -380,7 +380,7 @@ export default function HomePage() {
             {/* Main study spot logic */}
             {/* The outer div container that holds all sections including lecture halls, libraries, and cafes. */}
             <div className={`${styles.studySpotsContainer} ${styles.centeredContainer}`}>
-                <div className={styles.left}>
+                <div className={`${styles.left} ${isLoading ? styles.hiddenContainer : ''}`}>
 
                     {/* Lecture Halls Section */}
                     {/* Checks if there are any lecture halls/classrooms available in the groupedStudySpots data */}
@@ -623,10 +623,20 @@ export default function HomePage() {
                 </div>
 
                 {/* Right section: Map */}
-                <div className={styles.right}>
+                <div className={`${styles.right} ${isLoading ? styles.hiddenContainer : ''}`}>
                     <div ref={mapContainerRef} className={styles.map}></div>
                 </div>
             </div>
+            <footer className="footer">
+           
+            &copy; 2025 by 
+<a href="https://github.com/AmmarMo123" target="_blank" rel="noopener noreferrer">Ammar</a>, 
+<a href="https://github.com/farismaali" target="_blank" rel="noopener noreferrer">Faris Mali</a>, 
+<a href="https://www.androrizk.com/" target="_blank" rel="noopener noreferrer">Andro Rizk</a>, 
+with help from 
+<a href="https://www.hornetsnestguild.com/cvs/kevvol" target="_blank" rel="noopener noreferrer">Kevin</a>.
+           
+        </footer>
         </div>
     );
 }
