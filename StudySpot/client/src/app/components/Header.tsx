@@ -16,7 +16,7 @@ export default function Header() {
             />
             </a>
             Spots
-            <InfoPanel info="Bla Bla bla bla bla bla bla bla bla bla bla bla bla bla" />
+            <InfoPanel/>
             </h1>
             
             <h2 className={styles.headerSubtitle}>Powered by <a href="https://yorku.dev/" className={styles.link} target="_blank" rel="noopener noreferrer">SSADC</a></h2>
