@@ -543,6 +543,16 @@ export default function HomePage() {
                                             </div>
                                             {/* Display the available timings for the library */}
                                             <span className={styles.libraryTime}>
+                                            {library.website && (
+                                                <a
+                                                    href={library.website}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className={styles.libraryLink}
+                                                >
+                                                    Book spot
+                                                </a>
+                                            )}
                                                 {library.slots && library.slots.length > 0
                                                     ? `${library.slots[0].StartTime} - ${library.slots[0].EndTime}`
                                                     : "No timings available"}

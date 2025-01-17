@@ -4,8 +4,8 @@
     align-items: center; /* Vertically align logo and title */
     justify-content: center; /* Default: Center header horizontally */
     margin-top: 20px; /* Add space at the top */
-    
     width: 100%; /* Full width */
+    padding: 1px 20px;
 }
 
 /* Title styling */
@@ -14,6 +14,7 @@
     display: flex;
     align-items: center; /* Vertically align text with logo */
     text-align: center;
+    
 }
 .highlight {
     background-color: red; /* Background color for "YU" */
@@ -21,11 +22,52 @@
     padding: 0 2px; /* Add spacing around the text for a cleaner look */
     border-radius: 4px; /* Optional: rounded corners for the highlight */
   }
+  .logo {
+    height: 65px;
+    width: auto;
+    margin-right: -5px;
+  }
+  .headerSubtitle {
+    font-size: 14px; 
+    text-align: right; 
+    padding: 5px 10px; /* Adds spacing inside the background */
+    border-radius: 12px; /* Smooth rounded corners */
+    box-shadow: 0 2px 6px red; /* Shadow for a "attached" effect */
+}
+.link {
+    color: #f14242; /* Link color */
+    text-decoration: none; /* Remove default underline */
+    font-size: 14px; /* Slightly smaller than the main text */
+    margin-top: 5px; /* Add space above the link */
+    display: inline-block; /* Required for proper block positioning */
+    position: relative; /* Needed for pseudo-element positioning */
+    transition: color 0.3s ease-in-out; /* Smooth color transition */
+}
+
+.link::after {
+    content: ""; /* Creates the underline */
+    position: absolute; /* Positioned relative to the parent */
+    bottom: 0; /* Align underline at the bottom of the text */
+    left: 0; /* Start from the left */
+    width: 0%; /* Initially hidden */
+    height: 2px; /* Thickness of the underline */
+    background-color: #f14242; /* Color of the underline */
+    transition: width 0.3s ease-in-out; /* Smooth animation for width */
+}
+
+.link:hover {
+    color: #d82c2c; /* Slightly darker color on hover */
+}
+
+.link:hover::after {
+    width: 100%; /* Fully expand the underline */
+}
 /* For larger screens, align the header to the left */
 @media (min-width: 768px) {
     .header {
-        justify-content: flex-start; /* Align header to the left */
+        justify-content: space-between;  /* Align header to the left */
         padding-left: 20px; /* Optional: Add some left padding for spacing */
-        margin-left: 25px;
+        margin-left: 5px;
+        
     }
 }

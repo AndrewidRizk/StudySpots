@@ -292,10 +292,7 @@
     overflow-y: auto; /* Enable scrolling if the content overflows */
     padding: 20px; /* Padding for spacing */
     background-color: #f4f4f5; /* Light background color for contrast */
-    border-radius: 10px; /* Optional: Add rounded corners */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for container effect */
-    border: 1px solid #e5e7eb; /* Optional: Add a border for structure */
-    margin-right: 10px;
+
 }
 
 .right {
@@ -304,7 +301,7 @@
     background-color: #f4f4f5; /* Optional: Background color for map contrast */
     border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for container effect */
+    box-shadow: 0 2px 4px red; /* Subtle shadow for container effect */
     border: 1px solid #e5e7eb; /* Optional: Add a border for structure */
 }
 
@@ -317,7 +314,25 @@
     border: none; /* Remove the border */
     background-color: transparent; /* Make the container background transparent */
 }
+.libraryLink {
+    text-decoration: none; /* Remove underline */
+    font-size: 14px; /* Maintain the same size */
+    margin-right: 10px; /* Add spacing to the right */
+    display: inline-block; /* Inline-block for proper spacing */
+    padding: 2px 5px; /* Adds spacing inside the background */
+    border-radius: 8px; /* Smooth rounded corners */
+    transition: all 0.3s ease; /* Smooth transition for all properties */
+    color: #f14242; /* Default text color */
+    background-color: transparent; /* Transparent background by default */
+    box-shadow: 0 2px 6px rgba(241, 66, 66, 0.6); /* Soft shadow */
+}
 
+.libraryLink:hover {
+    color: white; /* Text color on hover */
+    background-color: #f57373; /* Red background on hover */
+    box-shadow: 0 4px 8px rgba(241, 66, 66, 0.8); /* Stronger shadow effect */
+    text-decoration: none; /* Optional: Remove underline even on hover */
+}
 @media (max-width: 768px) {
     .studySpotsContainer {
         flex-direction: column; /* Stack children vertically */
@@ -331,6 +346,12 @@
     .right {
         margin-top: 10px; /* Add spacing between stacked sections */
         width: 100%; /* Take full width of the container */
+    }
+    .left{
+        border-radius: 10px; /* Optional: Add rounded corners */
+        box-shadow: 0 2px 4px red; /* Subtle shadow for container effect */
+        border: 1px solid #e5e7eb; /* Optional: Add a border for structure */
+        margin-right: 10px;
     }
     .map {
         width: 100%; /* Ensure the map spans the full width */
