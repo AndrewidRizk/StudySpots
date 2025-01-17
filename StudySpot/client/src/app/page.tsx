@@ -630,11 +630,11 @@ export default function HomePage() {
             <footer className="footer">
            
             &copy; 2025 by 
-<a href="https://github.com/AmmarMo123" target="_blank" rel="noopener noreferrer">Ammar</a>, 
-<a href="https://github.com/farismaali" target="_blank" rel="noopener noreferrer">Faris Mali</a>, 
-<a href="https://www.androrizk.com/" target="_blank" rel="noopener noreferrer">Andro Rizk</a>, 
-with help from 
-<a href="https://www.hornetsnestguild.com/cvs/kevvol" target="_blank" rel="noopener noreferrer">Kevin</a>.
+<a href="https://www.androrizk.com/" target="_blank" rel="noopener noreferrer">Andro</a>,
+<a href="https://github.com/farismaali" target="_blank" rel="noopener noreferrer"> Faris</a>, 
+<a href="https://github.com/AmmarMo123" target="_blank" rel="noopener noreferrer"> Ammar</a>. 
+Inspired by Akshar Barot's
+<a href="https://spots.aksharbarot.com/" target="_blank" rel="noopener noreferrer"> Spots</a>.
            
         </footer>
         </div>
