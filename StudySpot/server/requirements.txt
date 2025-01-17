@@ -7,3 +7,5 @@ mysql-connector-python==8.0.28
 tmdbsimple==2.8.0
 Flask-SQLAlchemy==3.0.0
 python-dotenv==1.0.1
+pytz>=2021.1
+
