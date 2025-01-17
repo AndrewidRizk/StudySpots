@@ -5,7 +5,7 @@ from flask_cors import CORS  # Import Flask-Cors
 from app.config import Config
 from app.routes.test_connection import test_bp
 from app.routes.study_spots import study_spots_bp
-
+import pytz
 
 def create_app():
     """
@@ -13,6 +13,7 @@ def create_app():
     """
     app = Flask(__name__)
     app.config.from_object(Config)
+    pytz.timezone('America/Toronto')  # Replace with your timezone
 
     # Enable CORS for the app
     # Allow only requests from the frontend at http://localhost:3000
