@@ -378,5 +378,8 @@
         margin-left: 10px;
     }
 
+    .smallText {
+        font-size: 12px; /* Adjust font size as needed */
+    }
 
 }
