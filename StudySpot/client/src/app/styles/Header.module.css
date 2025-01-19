@@ -23,9 +23,10 @@
     border-radius: 4px; /* Optional: rounded corners for the highlight */
   }
   .logo {
-    height: 65px;
+    height: 55px;
     width: auto;
-    margin-right: -5px;
+    margin-right: 5px;
+    margin-top: -2px;
   }
   .headerSubtitle {
     font-size: 14px; 
