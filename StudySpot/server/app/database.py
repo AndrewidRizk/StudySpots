@@ -8,9 +8,12 @@ from datetime import timedelta  # Import timedelta
 from app.config import Config  # Import Config for environment variables
 from datetime import datetime
 from datetime import timedelta
+import pytz
 
 # Load environment variables from .env
 load_dotenv()
+toronto_tz = pytz.timezone('America/Toronto')
+current_time = datetime.now(toronto_tz)
 
 def create_connection():
     """Establishes and returns a MySQL database connection."""
@@ -41,7 +44,7 @@ def get_lecture_halls():
     from datetime import datetime
 
     print("Starting get_lecture_halls function...")  # Debugging log
-
+    
     connection = create_connection()
     if connection is None:
         return []
@@ -53,6 +56,8 @@ def get_lecture_halls():
         # Get the current day of the week
         day_map = ["M", "T", "W", "R", "F", "S", "U"]
         current_day = day_map[datetime.now().weekday()]
+        current_time = datetime.now(toronto_tz)
+        print(f"The current time in Toronto is {current_time.strftime('%Y-%m-%d %H:%M:%S')} and the day is {current_day}.")
 
         # Query the database
         query = """
