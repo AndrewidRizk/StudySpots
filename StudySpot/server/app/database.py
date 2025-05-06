@@ -55,8 +55,8 @@ def get_lecture_halls():
 
         # Get the current day of the week
         day_map = ["M", "T", "W", "R", "F", "S", "U"]
-        current_day = day_map[datetime.now().weekday()]
         current_time = datetime.now(toronto_tz)
+        current_day = day_map[current_time.weekday()]
         print(f"The current time in Toronto is {current_time.strftime('%Y-%m-%d %H:%M:%S')} and the day is {current_day}.")
 
         # Query the database
