@@ -13,4 +13,5 @@ ENV FLASK_APP=index.py
 EXPOSE 5001
 
 # Optional: load .env if used in app.py via python-dotenv
-CMD ["flask", "run", "--host=0.0.0.0"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5001", "wsgi:app"]
+
