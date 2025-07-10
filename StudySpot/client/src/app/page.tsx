@@ -5,7 +5,7 @@ import Header from './components/Header';
 import LoadingIndicator from './components/LoadingIndicator';
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-
+import { Analytics } from "@vercel/analytics/react"
 
 // Slot interface definition
 interface Slot {
@@ -34,25 +34,23 @@ interface Building {
 }
 
 export default function HomePage() {
-    //const [connectionStatus, setConnectionStatus] = useState<string | null>("Connected");
     const [studySpots, setStudySpots] = useState<Building[]>([]);
     const [currentTime, setCurrentTime] = useState<string>("");
     const [openBuildingIndex, setOpenBuildingIndex] = useState<string | null>(null); // Use building ID instead of index
     const [dataLoaded, setDataLoaded] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [userLocation, setUserLocation] = useState<{ latitude: number | null, longitude: number | null }>({ latitude: null, longitude: null });
     const mapContainerRef = useRef<HTMLDivElement | null>(null); // Reference for the map container
     const mapRef = useRef<mapboxgl.Map | null>(null); // Store map instacne
     const [openBuildingId, setOpenBuildingId] = useState<string | null>(null); // Store building_code instead of index
 
-    //const markersRef = useRef<mapboxgl.Marker[]>([]); // Track active markers 
     console.log(currentTime)
     // Function to check if current time is within a slot's time range
     const isAvailable = (startTime: string, endTime: string): boolean => {
         const currentTimeInMinutes = getCurrentTimeInMinutes();
-        const startTimeInMinutes = convertTimeToMinutes(startTime);
-        const endTimeInMinutes = convertTimeToMinutes(endTime);
-
+        const startTimeInMinutes = convertTimeToMinutes(startTime) + 9; // Add 9 minutes to end time to fix the issue
+        const endTimeInMinutes = convertTimeToMinutes(endTime); 
+ 
         // Handle overnight times (endTime past midnight)
         if (endTimeInMinutes < startTimeInMinutes) {
             return (currentTimeInMinutes >= startTimeInMinutes || currentTimeInMinutes <= endTimeInMinutes);
@@ -207,6 +205,10 @@ export default function HomePage() {
 
         // Add markers for buildings
         studySpots.forEach((building) => {
+            if (building.type === "cafe") {
+                return; // Skip this iteration
+            }
+        
             if (building.coords && Array.isArray(building.coords) && building.coords.length === 2) {
                 const [lng, lat] = building.coords;
 
@@ -220,28 +222,55 @@ export default function HomePage() {
                     markerElement.className = `marker ${markerClass}`;
                     console.log("Marker element created:", markerElement);
 
-                    // Add a click event to the marker
                     markerElement.addEventListener("click", () => {
                         console.log("Marker clicked:", building);
+                    
+                        const isLibrary = groupedStudySpots.library.some(
+                            (library) => library.building === building.building
+                        ); // Check if the clicked marker corresponds to a library.
 
-                        // Use handleToggleBuilding to toggle the accordion
-                        handleToggleBuilding(building.location.join(", ")); // Pass the unique building ID
-
-                        // Get the lecture halls section <details> element
-                        const lectureHallsSection = document.querySelector(`.${styles.section}`) as HTMLDetailsElement;
-                        if (lectureHallsSection && !lectureHallsSection.open) {
-                            // Open the lecture halls section if it is collapsed
-                            lectureHallsSection.open = true;
-                        }
-
-                        // Scroll to the corresponding accordion item
-                        const accordionItem = document.getElementById(building.location.join(", "));
-                        if (accordionItem) {
-                            setTimeout(() => {
-                                accordionItem.scrollIntoView({ behavior: "smooth", block: "start" });
-                            }, 100); // Delay by 100ms
+                        console.log("isLibrary: ", isLibrary)
+                    
+                        if (isLibrary) {
+                            // Handle library marker click
+                    
+                            // Get the Library section <details> element
+                            const librarySection = document.querySelector(`.${styles.section}:nth-of-type(2)`) as HTMLDetailsElement;
+                            if (librarySection) {
+                                // Open the Library section if it is collapsed
+                                if (!librarySection.open) {
+                                    librarySection.open = true;
+                                }
+                    
+                                // Scroll to the Library section
+                                setTimeout(() => {
+                                    librarySection.scrollIntoView({ behavior: "smooth", block: "start" });
+                                }, 100); // Optional delay to ensure smooth scrolling
+                            } else {
+                                console.warn("Library section not found.");
+                            }
                         } else {
-                            console.warn(`Accordion item for ${building.location.join(", ")} not found.`);
+                            // Handle lecture hall marker click
+                    
+                            // Use handleToggleBuilding to toggle the accordion
+                            handleToggleBuilding(building.location.join(", ")); // Pass the unique building ID
+                    
+                            // Get the Lecture Halls section <details> element
+                            const lectureHallsSection = document.querySelector(`.${styles.section}:nth-of-type(1)`) as HTMLDetailsElement;
+                            if (lectureHallsSection && !lectureHallsSection.open) {
+                                // Open the Lecture Halls section if it is collapsed
+                                lectureHallsSection.open = true;
+                            }
+                    
+                            // Scroll to the corresponding lecture hall accordion item
+                            const accordionItem = document.getElementById(building.location.join(", "));
+                            if (accordionItem) {
+                                setTimeout(() => {
+                                    accordionItem.scrollIntoView({ behavior: "smooth", block: "start" });
+                                }, 100); // Delay by 100ms
+                            } else {
+                                console.warn(`Accordion item for ${building.location.join(", ")} not found.`);
+                            }
                         }
                     });
 
@@ -372,14 +401,15 @@ export default function HomePage() {
         <div className={styles.container}>
             {/* Header component */}
             <Header />
-
+            <Analytics />
+            
             {/* Loading component */}
             {isLoading && <LoadingIndicator />}
 
             {/* Main study spot logic */}
             {/* The outer div container that holds all sections including lecture halls, libraries, and cafes. */}
             <div className={`${styles.studySpotsContainer} ${styles.centeredContainer}`}>
-                <div className={styles.left}>
+                <div className={`${styles.left} ${isLoading ? styles.hiddenContainer : ''}`}>
 
                     {/* Lecture Halls Section */}
                     {/* Checks if there are any lecture halls/classrooms available in the groupedStudySpots data */}
@@ -542,65 +572,18 @@ export default function HomePage() {
                                             </div>
                                             {/* Display the available timings for the library */}
                                             <span className={styles.libraryTime}>
+                                            {library.website && (
+                                                <a
+                                                    href={library.website}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className={styles.libraryLink}
+                                                >
+                                                    Book spot
+                                                </a>
+                                            )}
                                                 {library.slots && library.slots.length > 0
                                                     ? `${library.slots[0].StartTime} - ${library.slots[0].EndTime}`
-                                                    : "No timings available"}
-                                            </span>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </details>
-                    )}
-
-                    {/* Cafes Section */}
-                    {/* Checks if there are any cafes available in the groupedStudySpots data */}
-                    {groupedStudySpots.cafe.length > 0 && (
-                        <details className={styles.section}>
-                            <summary className={styles.sectionTitle}>Cafes</summary>
-                            <div className={styles.studySpots}>
-                                {/* Iterate over all available cafes */}
-                                {groupedStudySpots.cafe.map((cafe, index) => {
-                                    let cafeStatus = "Unavailable"; // Default status for the cafe
-                                    let hasAvailable = false; // Flag to check if there's an available slot
-                                    let hasOpeningSoon = false; // Flag to check if there's a slot opening soon
-
-                                    // Iterate over each slot to determine cafe availability
-                                    cafe.slots.forEach((slot) => {
-                                        if (isAvailable(slot.StartTime, slot.EndTime)) {
-                                            hasAvailable = true;
-                                        } else if (isOpeningSoon(slot.StartTime)) {
-                                            hasOpeningSoon = true;
-                                        }
-                                    });
-
-                                    // Update cafe status based on availability
-                                    if (hasAvailable) {
-                                        cafeStatus = "Available";
-                                    } else if (hasOpeningSoon) {
-                                        cafeStatus = "Opening Soon";
-                                    }
-
-                                    return (
-                                        /* Render information for each cafe */
-                                        <div key={index} className={styles.cafeRow}>
-                                            <div className={styles.cafeHeader}>
-                                                <span
-                                                    className={
-                                                        cafeStatus === "Available"
-                                                            ? styles.dotAvailable
-                                                            : cafeStatus === "Opening Soon"
-                                                                ? styles.dotOpeningSoon
-                                                                : styles.dotUnavailable
-                                                    }
-                                                ></span>
-                                                {/* Display cafe name */}
-                                                <span className={styles.cafeName}>{cafe.building}</span>
-                                            </div>
-                                            {/* Display the available timings for the cafe */}
-                                            <span className={styles.cafeTime}>
-                                                {cafe.slots && cafe.slots.length > 0
-                                                    ? `${cafe.slots[0].StartTime} - ${cafe.slots[0].EndTime}`
                                                     : "No timings available"}
                                             </span>
                                         </div>
@@ -612,10 +595,22 @@ export default function HomePage() {
                 </div>
 
                 {/* Right section: Map */}
-                <div className={styles.right}>
+                <div className={`${styles.right} ${isLoading ? styles.hiddenContainer : ''}`}>
                     <div ref={mapContainerRef} className={styles.map}></div>
                 </div>
             </div>
+            <footer className="footer">
+           
+            <div className={styles.smallText}>
+                &copy; 2025 by 
+                <a href="https://www.androrizk.com/" target="_blank" rel="noopener noreferrer"> Andro</a>, 
+                <a href="https://github.com/farismaali" target="_blank" rel="noopener noreferrer"> Faris</a>, 
+                <a href="https://github.com/AmmarMo123" target="_blank" rel="noopener noreferrer"> Ammar</a>. 
+                Inspired by Akshar's 
+                <a href="https://spots.aksharbarot.com/" target="_blank" rel="noopener noreferrer"> Spots</a>.
+            </div>
+           
+        </footer>
         </div>
     );
 }
