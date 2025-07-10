@@ -49,8 +49,8 @@ export default function HomePage() {
     const isAvailable = (startTime: string, endTime: string): boolean => {
         const currentTimeInMinutes = getCurrentTimeInMinutes();
         const startTimeInMinutes = convertTimeToMinutes(startTime) + 9; // Add 9 minutes to end time
-        const endTimeInMinutes = convertTimeToMinutes(endTime);
-
+        const endTimeInMinutes = convertTimeToMinutes(endTime); 
+ 
         // Handle overnight times (endTime past midnight)
         if (endTimeInMinutes < startTimeInMinutes) {
             return (currentTimeInMinutes >= startTimeInMinutes || currentTimeInMinutes <= endTimeInMinutes);
