@@ -48,7 +48,7 @@ export default function HomePage() {
     // Function to check if current time is within a slot's time range
     const isAvailable = (startTime: string, endTime: string): boolean => {
         const currentTimeInMinutes = getCurrentTimeInMinutes();
-        const startTimeInMinutes = convertTimeToMinutes(startTime) + 9; // Add 9 minutes to end time
+        const startTimeInMinutes = convertTimeToMinutes(startTime) + 9; // Add 9 minutes to end time to fix the issue
         const endTimeInMinutes = convertTimeToMinutes(endTime); 
  
         // Handle overnight times (endTime past midnight)
