@@ -5,6 +5,7 @@ from app.database import get_lecture_halls, get_cafes, get_libraries
 
 study_spots_bp = Blueprint('study_spots', __name__)
 
+@study_spots_bp.route('/study-spots/', methods=['GET'])
 @study_spots_bp.route('/study-spots', methods=['GET'])
 def fetch_study_spots():
     """

@@ -5,6 +5,8 @@ from flask_cors import CORS  # Import Flask-Cors
 from app.config import Config
 from app.routes.test_connection import test_bp
 from app.routes.study_spots import study_spots_bp
+from app.routes.dashboard import dashboard_bp
+from app.routes.simple_swagger import swagger_bp
 import pytz
 from datetime import datetime
 
@@ -30,5 +32,7 @@ def create_app():
     # Register blueprints
     app.register_blueprint(test_bp, url_prefix="/api")
     app.register_blueprint(study_spots_bp, url_prefix="/api")
+    app.register_blueprint(dashboard_bp)
+    app.register_blueprint(swagger_bp)
 
     return app
