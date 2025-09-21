@@ -6,6 +6,7 @@ import LoadingIndicator from './components/LoadingIndicator';
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Analytics } from "@vercel/analytics/react"
+import RoomTimeline from './components/RoomTimeline';
 
 // Slot interface definition
 interface Slot {
@@ -31,6 +32,7 @@ interface Building {
     distance: number;
     type: "lecture_hall" | "cafe" | "library";
     slots?: Slot[];
+    website?: string;
 }
 
 export default function HomePage() {
@@ -312,19 +314,19 @@ export default function HomePage() {
                 if (building.type === "lecture_hall"){
                     // Check availability for all rooms and slots
                     Object.keys(building.rooms).forEach((roomKey) => {
-                    const room = building.rooms[roomKey];
-                    room.slots.forEach((slot) => {
-                        //console.log(`Building: ${building.building}, Room: ${roomKey}, Slot Start: ${slot.StartTime}, Slot End: ${slot.EndTime}`);
-                        if (isAvailable(slot.StartTime, slot.EndTime)) {
-                            hasAvailable = true;
-                        } else if (isOpeningSoon(slot.StartTime)) {
-                            hasOpeningSoon = true;
-                        }
+                        const room = building.rooms[roomKey];
+                        room.slots.forEach((slot: Slot) => {
+                            //console.log(`Building: ${building.building}, Room: ${roomKey}, Slot Start: ${slot.StartTime}, Slot End: ${slot.EndTime}`);
+                            if (isAvailable(slot.StartTime, slot.EndTime)) {
+                                hasAvailable = true;
+                            } else if (isOpeningSoon(slot.StartTime)) {
+                                hasOpeningSoon = true;
+                            }
+                        });
                     });
-                });
                 } else if (building.type === "cafe" || building.type === "library"){
                     // Check availability directly at the building level for cafes and libraries
-                    building.slots?.forEach((slot) => {
+                    building.slots?.forEach((slot: Slot) => {
                         if (isAvailable(slot.StartTime, slot.EndTime)) {
                             hasAvailable = true;
                         } else if (isOpeningSoon(slot.StartTime)) {
@@ -349,7 +351,28 @@ export default function HomePage() {
                 };
             });
 
-            console.log("Transformed Data:", transformedData);
+            // Hardcode demo free slots for all rooms so both text and timeline match
+            const demoSlots: Slot[] = [
+                { StartTime: "08:30", EndTime: "10:00", Status: "Available" },
+                { StartTime: "10:30", EndTime: "11:30", Status: "Available" },
+                { StartTime: "18:30", EndTime: "22:00", Status: "Available" },
+            ];
+
+            const demoApplied = transformedData.map((b: Building) => {
+                if (b.type === "lecture_hall") {
+                    const newRooms: { [key: string]: Room } = {};
+                    Object.keys(b.rooms).forEach((roomKey) => {
+                        const room = b.rooms[roomKey];
+                        newRooms[roomKey] = { ...room, slots: demoSlots };
+                    });
+                    return { ...b, rooms: newRooms } as Building;
+                }
+                return b;
+            });
+
+            console.log("Transformed Data:", demoApplied);
+            // Hard coded data for testing without backend
+            // setStudySpots(demoApplied);
             setStudySpots(transformedData);
             setDataLoaded(true);
 
@@ -367,8 +390,8 @@ export default function HomePage() {
         });
     };
 
-    const groupByType = (spots: StudySpot[]) => {
-        const grouped: { [key: string]: StudySpot[] } = {
+    const groupByType = (spots: Building[]) => {
+        const grouped: { [key: string]: Building[] } = {
             lecture_hall: [],
             cafe: [],
             library: [],
@@ -478,7 +501,7 @@ export default function HomePage() {
                                                     let roomStatus = "Unavailable"; // Default status for the room
 
                                                     // Determine room status by iterating over all available time slots
-                                                    room.slots.forEach((slot) => {
+                                                    room.slots.forEach((slot: Slot) => {
                                                         if (isAvailable(slot.StartTime, slot.EndTime)) {
                                                             roomStatus = "Available";
                                                         } else if (isOpeningSoon(slot.StartTime)) {
@@ -515,6 +538,16 @@ export default function HomePage() {
                                                                     ))}
                                                                 </div>
                                                             </div>
+                                                            {/* Visual timeline of the day for this room (full row) */}
+                                                            <div style={{ marginTop: 8, width: '100%' }}>
+                                                                <RoomTimeline
+                                                                    freeSlots={room.slots}
+                                                                    dayStart="08:30"
+                                                                    dayEnd="22:00"
+                                                                    showLabels={false}
+                                                                    showNowIndicator={true}
+                                                                />
+                                                            </div>
                                                         </div>
                                                     );
                                                 })}
@@ -539,7 +572,7 @@ export default function HomePage() {
                                     let hasOpeningSoon = false; // Flag to check if there's a slot opening soon
 
                                     // Iterate over each slot to determine library availability
-                                    library.slots.forEach((slot) => {
+                                    library.slots?.forEach((slot: Slot) => {
                                         if (isAvailable(slot.StartTime, slot.EndTime)) {
                                             hasAvailable = true;
                                         } else if (isOpeningSoon(slot.StartTime)) {
