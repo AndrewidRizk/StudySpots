@@ -31,9 +31,13 @@
   .headerSubtitle {
     font-size: 14px; 
     text-align: right; 
-    padding: 5px 10px; /* Adds spacing inside the background */
+    padding: 8px 16px; /* Better spacing inside the box */
     border-radius: 12px; /* Smooth rounded corners */
-    box-shadow: 1px 2px 3px red; /* Shadow for a "attached" effect */
+    background-color: #2d3748; /* Dark box background */
+    border: 1px solid #4a5568; /* Subtle border */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); /* Soft shadow for depth */
+    color: #e2e8f0; /* Light text color */
+    font-weight: 500; /* Slightly bolder text */
 }
 .link {
     color: #f14242; /* Link color */
@@ -63,6 +67,31 @@
 .link:hover::after {
     width: 100%; /* Fully expand the underline */
 }
+/* Mobile-specific header styling */
+@media (max-width: 767px) {
+    .header {
+        padding: 15px 20px; /* Add padding around the header */
+        margin-top: 10px; /* Reduce top margin on mobile */
+        margin-bottom: 15px; /* Add bottom margin for separation */
+        gap: 15px; /* Add space between logo and SSADC box */
+    }
+    
+    .title {
+        font-size: 28px; /* Slightly smaller title on mobile */
+    }
+    
+    .logo {
+        height: 45px; /* Slightly smaller logo on mobile */
+        margin-right: 8px; /* Add some space after logo */
+    }
+    
+    .headerSubtitle {
+        font-size: 12px; /* Slightly smaller text */
+        padding: 6px 12px; /* Reduce padding for mobile */
+        white-space: nowrap; /* Prevent text wrapping */
+    }
+}
+
 /* For larger screens, align the header to the left */
 @media (min-width: 768px) {
     .header {
