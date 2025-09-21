@@ -189,11 +189,13 @@ export default function HomePage() {
         // Create map instance
         mapRef.current = new mapboxgl.Map({
             container: mapContainerRef.current as HTMLElement,
-            style: "mapbox://styles/mapbox/standard",
+            style: "mapbox://styles/farism3/cmft09shw00a401s02j1d7xut", // Use custom dark style
             center: [-79.503471, 43.772861], // Default to YorkU location if no user location
             zoom: 16.5,
-            pitch: 60,
+            pitch: 60
         });
+
+        // Using custom Mapbox Studio style - no additional styling needed
 
         // Add user location marker
         if (userLocation && userLocation.latitude && userLocation.longitude) {
@@ -432,6 +434,7 @@ export default function HomePage() {
             {/* Main study spot logic */}
             {/* The outer div container that holds all sections including lecture halls, libraries, and cafes. */}
             <div className={`${styles.studySpotsContainer} ${styles.centeredContainer}`}>
+                {/* Study spots list - left on desktop, bottom on mobile */}
                 <div className={`${styles.left} ${isLoading ? styles.hiddenContainer : ''}`}>
 
                     {/* Lecture Halls Section */}
@@ -627,7 +630,7 @@ export default function HomePage() {
                     )}
                 </div>
 
-                {/* Right section: Map */}
+                {/* Map section - right on desktop, top on mobile */}
                 <div className={`${styles.right} ${isLoading ? styles.hiddenContainer : ''}`}>
                     <div ref={mapContainerRef} className={styles.map}></div>
                 </div>
