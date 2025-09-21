@@ -1,3 +1,4 @@
+
 "use client";
 import { useState, useEffect, useRef } from 'react';
 import styles from './styles/HomePage.module.css';
@@ -7,20 +8,17 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Analytics } from "@vercel/analytics/react"
 import RoomTimeline from './components/RoomTimeline';
-
 // Slot interface definition
 interface Slot {
     StartTime: string;
     EndTime: string;
     Status: string;
 }
-
 // Room interface definition, contains slots
 interface Room {
     roomNumber: string;
     slots: Slot[];
 }
-
 // Building interface definition, contains rooms
 interface Building {
     building: string;
@@ -34,7 +32,6 @@ interface Building {
     slots?: Slot[];
     website?: string;
 }
-
 export default function HomePage() {
     const [studySpots, setStudySpots] = useState<Building[]>([]);
     const [currentTime, setCurrentTime] = useState<string>("");
@@ -45,7 +42,101 @@ export default function HomePage() {
     const mapContainerRef = useRef<HTMLDivElement | null>(null); // Reference for the map container
     const mapRef = useRef<mapboxgl.Map | null>(null); // Store map instacne
     const [openBuildingId, setOpenBuildingId] = useState<string | null>(null); // Store building_code instead of index
-
+    const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null); // Track which marker is currently selected for animation
+    const selectedMarkerIdRef = useRef<string | null>(null);
+    const animationTimeoutRef = useRef<number | null>(null);
+    const retryTimeoutRef = useRef<number | null>(null);
+    // Function to add pulsing animation to a marker
+    const animateMarker = (markerId: string, delayMs: number = 0) => {
+        // Remove animation from ALL marker dots to guarantee single pulse
+        document.querySelectorAll('.marker-dot').forEach((el) => {
+            (el as HTMLElement).style.animation = '';
+        });
+        // Cancel any pending timeouts from a previous selection
+        if (animationTimeoutRef.current) {
+            clearTimeout(animationTimeoutRef.current);
+            animationTimeoutRef.current = null;
+        }
+        if (retryTimeoutRef.current) {
+            clearTimeout(retryTimeoutRef.current);
+            retryTimeoutRef.current = null;
+        }
+        // Mark this as the currently selected marker immediately
+        setSelectedMarkerId(markerId);
+        selectedMarkerIdRef.current = markerId;
+        // Optionally wait (e.g., after flyTo) then animate the marker's inner dot
+        animationTimeoutRef.current = window.setTimeout(() => {
+            // Only proceed if this marker is still the selected one (use ref to avoid stale closure)
+            if (selectedMarkerIdRef.current && selectedMarkerIdRef.current !== markerId) return;
+            const dot = document.querySelector(
+                `[data-marker-id="${markerId}"] .marker-dot`
+            ) as HTMLElement | null;
+            if (dot) {
+                console.log('Animating marker dot:', markerId, dot);
+                dot.style.animation = 'pulse 1.5s ease-in-out infinite'; // Pulse continuously
+            } else {
+                console.warn('Marker dot not found for animation:', markerId);
+                // Try again after a bit more delay
+                retryTimeoutRef.current = window.setTimeout(() => {
+                    if (selectedMarkerIdRef.current && selectedMarkerIdRef.current !== markerId) return; // selection changed
+                    const retryDot = document.querySelector(
+                        `[data-marker-id="${markerId}"] .marker-dot`
+                    ) as HTMLElement | null;
+                    if (retryDot) {
+                        console.log('Retrying marker dot animation:', markerId, retryDot);
+                        // Clear any previous animations on all dots again, then start this one
+                        document.querySelectorAll('.marker-dot').forEach((el) => {
+                            (el as HTMLElement).style.animation = '';
+                        });
+                        retryDot.style.animation = 'pulse 1.5s ease-in-out infinite';
+                    } else {
+                        console.error('Marker dot still not found after retry:', markerId);
+                    }
+                }, 500);
+            }
+        }, delayMs);
+    };
+    // Keep ref in sync with state
+    useEffect(() => {
+        selectedMarkerIdRef.current = selectedMarkerId;
+    }, [selectedMarkerId]);
+    // Add CSS animation keyframes to document head
+    useEffect(() => {
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { 
+                    transform: scale(1); 
+                }
+                50% { 
+                    transform: scale(1.8); 
+                }
+                100% { 
+                    transform: scale(1); 
+                }
+            }
+            /* Simple pin: circular head with a small pointer */
+            .pin {
+                position: relative;
+            }
+            .pin::after {
+                content: '';
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                bottom: -6px; /* places triangle below the circle */
+                width: 0; height: 0;
+                border-left: 4px solid transparent;
+                border-right: 4px solid transparent;
+                border-top: 6px solid currentColor; /* uses element color */
+            }
+        `;
+        document.head.appendChild(style);
+        
+        return () => {
+            document.head.removeChild(style);
+        };
+    }, []);
     console.log(currentTime)
     // Function to check if current time is within a slot's time range
     const isAvailable = (startTime: string, endTime: string): boolean => {
@@ -57,30 +148,24 @@ export default function HomePage() {
         if (endTimeInMinutes < startTimeInMinutes) {
             return (currentTimeInMinutes >= startTimeInMinutes || currentTimeInMinutes <= endTimeInMinutes);
         }
-
         return currentTimeInMinutes >= startTimeInMinutes && currentTimeInMinutes <= endTimeInMinutes;
     };
-
     // Function to check if a room is opening soon (within 30 minutes)
     const isOpeningSoon = (startTime: string): boolean => {
         const currentTimeInMinutes = getCurrentTimeInMinutes();
         const startTimeInMinutes = convertTimeToMinutes(startTime);
-
         return startTimeInMinutes - currentTimeInMinutes <= 30 && startTimeInMinutes - currentTimeInMinutes > 0;
     };
-
     // Helper function to convert HH:mm time format to minutes
     const convertTimeToMinutes = (time: string): number => {
         const [hours, minutes] = time.split(":").map((str) => parseInt(str, 10));
         return hours * 60 + minutes;
     };
-
     // Function to get the current time in minutes
     const getCurrentTimeInMinutes = (): number => {
         const now = new Date();
         return now.getHours() * 60 + now.getMinutes();
     };
-
     // function to sort the location based on the given location Lat and Lon
     // uses Haversine formula
     // takes in the grouped list of buildings and current location 
@@ -101,13 +186,11 @@ export default function HomePage() {
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
             return R * c; // Distance in kilometers
         };
-
         // Sort each type of study spot
         Object.keys(groupedStudySpots).forEach((type) => {
             groupedStudySpots[type].sort((a, b) => {
                 const [lonA, latA] = a.location; // Access the location tuple
                 const [lonB, latB] = b.location;
-
                 const distanceA = calculateDistance(
                     currentLocation.latitude,
                     currentLocation.longitude,
@@ -120,25 +203,26 @@ export default function HomePage() {
                     latB,
                     lonB
                 );
-
                 return distanceA - distanceB; // Sort ascending by distance
             });
         });
     };
-
-    // Helper function to color markers based on building status
-    const getMarkerClass = (status: string): string => {
+    // Helper to return base classes (size) for the marker icon wrapper (used for animation)
+    const getMarkerClass = (): string => {
+        return "h-5 w-5 cursor-pointer";
+    };
+    // Helper to return hex color for a status
+    const getMarkerColor = (status: string): string => {
         switch (status) {
             case "Available":
-                return "h-3 w-3 rounded-full bg-green-500 shadow-[0px_0px_4px_2px_rgba(34,197,94,0.7)] cursor-pointer";// Green marker
+                return "#22c55e"; // green-500
             case "Opening Soon":
-                return "h-3 w-3 rounded-full bg-amber-400 shadow-[0px_0px_4px_2px_rgba(245,158,11,0.9)] cursor-pointer"; // Amber marker
+                return "#f59e0b"; // amber-400
             case "Unavailable":
             default:
-                return "h-3 w-3 rounded-full bg-red-500 shadow-[0px_0px_4px_2px_rgba(239,68,68,0.9)] cursor-pointer"; // Red marker
+                return "#ef4444"; // red-500
         }
     };
-
     // Update current time every minute
     useEffect(() => {
         const interval = setInterval(() => {
@@ -146,10 +230,8 @@ export default function HomePage() {
             const currentTimeString = current.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             setCurrentTime(currentTimeString);
         }, 60000); // Update every minute
-
         return () => clearInterval(interval); // Clean up on component unmount
     }, []);
-
     // Request location access on component mount
     useEffect(() => {
         if (navigator.geolocation) {
@@ -174,29 +256,23 @@ export default function HomePage() {
             console.log("Geolocation is not supported by this browser.");
         }
     }, []);
-
     // Initialize map on first render
     useEffect(() => {
         if (!studySpots.length) return; // Wait until studySpots is populated
-
         const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
         if (!mapboxToken) {
             console.error("Mapbox token is missing!");
             return;
         }
         mapboxgl.accessToken = mapboxToken;
-
         // Create map instance
         mapRef.current = new mapboxgl.Map({
             container: mapContainerRef.current as HTMLElement,
             style: "mapbox://styles/farism3/cmft09shw00a401s02j1d7xut", // Use custom dark style
             center: [-79.503471, 43.772861], // Default to YorkU location if no user location
             zoom: 16.5,
-            pitch: 60
+            pitch: 60,
         });
-
-        // Using custom Mapbox Studio style - no additional styling needed
-
         // Add user location marker
         if (userLocation && userLocation.latitude && userLocation.longitude) {
             const userMarkerElement = document.createElement("div");
@@ -206,7 +282,6 @@ export default function HomePage() {
                 .setLngLat([userLocation.longitude, userLocation.latitude])
                 .addTo(mapRef.current);
         }
-
         // Add markers for buildings
         studySpots.forEach((building) => {
             if (building.type === "cafe") {
@@ -216,27 +291,44 @@ export default function HomePage() {
             if (building.coords && Array.isArray(building.coords) && building.coords.length === 2) {
                 const [lng, lat] = building.coords;
 
-
                 if (typeof lng === "number" && typeof lat === "number") {
                     console.log(`Building: ${building.building}, Status: ${building.building_status}`);
                     console.log("Study spots data:", studySpots);
-                    const markerClass = getMarkerClass(building.building_status);
-                    // Create marker element
+                    const markerClass = getMarkerClass();
+                    const markerColor = getMarkerColor(building.building_status);
+                    // Create marker element (container) and inner dot for animation
                     const markerElement = document.createElement("div");
-                    markerElement.className = `marker ${markerClass}`;
-                    console.log("Marker element created:", markerElement);
-
+                    markerElement.className = 'marker';
+                    const markerDot = document.createElement("div");
+                    markerDot.className = `${markerClass} marker-dot`;
+                    markerDot.style.color = markerColor; // currentColor used by SVG
+                    markerDot.style.display = 'flex';
+                    markerDot.style.alignItems = 'center';
+                    markerDot.style.justifyContent = 'center';
+                    markerDot.style.transformOrigin = 'center';
+                    // Inline SVG pin (Material-like). Scales with width/height of wrapper. Uses currentColor.
+                    markerDot.innerHTML = `
+                        <svg viewBox="0 0 24 24" width="100%" height="100%" aria-hidden="true" focusable="false">
+                          <path fill="currentColor" d="M12 2C8.686 2 6 4.686 6 8c0 4.418 6 12 6 12s6-7.582 6-12c0-3.314-2.686-6-6-6zm0 8.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/>
+                          <circle cx="12" cy="8.5" r="1.6" fill="#ffffff" opacity="0.9"/>
+                        </svg>
+                    `;
+                    markerElement.appendChild(markerDot);
+                    const markerId = building.location.join(", ");
+                    markerElement.setAttribute('data-marker-id', markerId); // Add identifier for animation
+                    console.log("Marker element created:", markerElement, "with ID:", markerId);
                     markerElement.addEventListener("click", () => {
                         console.log("Marker clicked:", building);
                     
                         const isLibrary = groupedStudySpots.library.some(
                             (library) => library.building === building.building
                         ); // Check if the clicked marker corresponds to a library.
-
                         console.log("isLibrary: ", isLibrary)
                     
                         if (isLibrary) {
                             // Handle library marker click
+                            // Start pulsing this marker and stop previous immediately
+                            animateMarker(markerId);
                     
                             // Get the Library section <details> element
                             const librarySection = document.querySelector(`.${styles.section}:nth-of-type(2)`) as HTMLDetailsElement;
@@ -255,7 +347,8 @@ export default function HomePage() {
                             }
                         } else {
                             // Handle lecture hall marker click
-                    
+                            // Start pulsing this marker and stop previous immediately
+                            animateMarker(markerId);
                             // Use handleToggleBuilding to toggle the accordion
                             handleToggleBuilding(building.location.join(", ")); // Pass the unique building ID
                     
@@ -277,7 +370,6 @@ export default function HomePage() {
                             }
                         }
                     });
-
                     // Add the marker to the map
                     if (mapRef.current) {
                         new mapboxgl.Marker({element: markerElement,})
@@ -288,20 +380,17 @@ export default function HomePage() {
                     }
                 } else {
                     console.error(`Invalid coordinates for building: ${building.building}`, building.coords);
-
                 }
             } else {
                 console.error(`Missing coordinates for building: ${building.building}`);
             }
         });
-
         return () => {
             if (mapRef.current) {
                 mapRef.current.remove(); // Only call if mapRef.current is not null
             }
         };
     }, [studySpots, userLocation]);
-
     const handleFetchStudySpots = async () => {
         try {
             setIsLoading(true); // Set loading to true when fetch starts
@@ -343,7 +432,6 @@ export default function HomePage() {
                 } else if (hasOpeningSoon) {
                     buildingStatus = "Opening Soon";
                 }
-
                 return {
                     ...building,
                     coords: building.location
@@ -352,14 +440,12 @@ export default function HomePage() {
                     building_status: buildingStatus, // Add calculated building status
                 };
             });
-
             // Hardcode demo free slots for all rooms so both text and timeline match
             const demoSlots: Slot[] = [
                 { StartTime: "08:30", EndTime: "10:00", Status: "Available" },
                 { StartTime: "10:30", EndTime: "11:30", Status: "Available" },
                 { StartTime: "18:30", EndTime: "22:00", Status: "Available" },
             ];
-
             const demoApplied = transformedData.map((b: Building) => {
                 if (b.type === "lecture_hall") {
                     const newRooms: { [key: string]: Room } = {};
@@ -371,13 +457,11 @@ export default function HomePage() {
                 }
                 return b;
             });
-
             console.log("Transformed Data:", demoApplied);
             // Hard coded data for testing without backend
             // setStudySpots(demoApplied);
             setStudySpots(transformedData);
             setDataLoaded(true);
-
         } catch (error) {
             console.error("Failed to fetch study spots:", error);
         } finally {
@@ -388,27 +472,57 @@ export default function HomePage() {
         console.log("Toggling ID:", id); // Debugging
         setOpenBuildingIndex((prevId) => {
             console.log("Previous ID:", prevId); // Debugging
-            return prevId === id ? null : id;
+            const newId = prevId === id ? null : id;
+            
+            // If expanding a building (newId is not null), recenter map to that building
+            if (newId && mapRef.current) {
+                // Find the building by matching the location ID
+                const targetBuilding = studySpots.find(building => 
+                    building.location && building.location.join(", ") === newId
+                );
+                
+                if (targetBuilding && targetBuilding.coords) {
+                    const [lng, lat] = targetBuilding.coords;
+                    console.log(`Recentering map to: ${targetBuilding.building} at [${lng}, ${lat}]`);
+                    
+                    // Smoothly fly to the building's location
+                    mapRef.current.flyTo({
+                        center: [lng, lat],
+                        zoom: 18, // Zoom in more when focusing on a building
+                        duration: 1000, // 1 second animation
+                    });
+                    
+                    // Animate the marker
+                    console.log('About to animate marker with ID:', newId);
+                    animateMarker(newId);
+                }
+            }
+            
+            // If collapsing the currently open building, stop pulsing on the selected marker
+            if (!newId && selectedMarkerId) {
+                const prevDot = document.querySelector(
+                    `[data-marker-id="${selectedMarkerId}"] .marker-dot`
+                ) as HTMLElement | null;
+                if (prevDot) prevDot.style.animation = '';
+                setSelectedMarkerId(null);
+            }
+            return newId;
         });
     };
-
     const groupByType = (spots: Building[]) => {
         const grouped: { [key: string]: Building[] } = {
             lecture_hall: [],
             cafe: [],
             library: [],
         };
-
         spots.forEach(spot => {
             if (grouped[spot.type]) {
                 grouped[spot.type].push(spot);
             }
         });
-
         return grouped;
     };
     const groupedStudySpots = groupByType(studySpots); // Group study spots by type
-
     // Sort groupedStudySpots by proximity using the user's current location
     if (userLocation.latitude !== null && userLocation.longitude !== null) {
         sortStudySpotsByProximity(groupedStudySpots, {
@@ -430,13 +544,10 @@ export default function HomePage() {
             
             {/* Loading component */}
             {isLoading && <LoadingIndicator />}
-
             {/* Main study spot logic */}
             {/* The outer div container that holds all sections including lecture halls, libraries, and cafes. */}
             <div className={`${styles.studySpotsContainer} ${styles.centeredContainer}`}>
-                {/* Study spots list - left on desktop, bottom on mobile */}
                 <div className={`${styles.left} ${isLoading ? styles.hiddenContainer : ''}`}>
-
                     {/* Lecture Halls Section */}
                     {/* Checks if there are any lecture halls/classrooms available in the groupedStudySpots data */}
                     {groupedStudySpots.lecture_hall.length > 0 && (
@@ -448,7 +559,6 @@ export default function HomePage() {
                                     let buildingStatus = "Unavailable"; // Default status of the building
                                     let hasAvailable = false; // Flag to check if there's an available room
                                     let hasOpeningSoon = false; // Flag to check if there's a room opening soon
-
                                     // Iterate over each room in the building to determine availability
                                     Object.keys(building.rooms).forEach((roomKey) => {
                                         const room = building.rooms[roomKey];
@@ -461,14 +571,12 @@ export default function HomePage() {
                                             }
                                         });
                                     });
-
                                     // Update building status based on room availability
                                     if (hasAvailable) {
                                         buildingStatus = "Available";
                                     } else if (hasOpeningSoon) {
                                         buildingStatus = "Opening Soon";
                                     }
-
                                     return (
                                         /* Render details for each building with collapsible behavior */
                                         <details key={index} className={styles.building} open={openBuildingIndex === building.location.join(", ")} id={building.location.join(", ")}>
@@ -502,7 +610,6 @@ export default function HomePage() {
                                                 {Object.keys(building.rooms).map((roomKey) => {
                                                     const room = building.rooms[roomKey];
                                                     let roomStatus = "Unavailable"; // Default status for the room
-
                                                     // Determine room status by iterating over all available time slots
                                                     room.slots.forEach((slot: Slot) => {
                                                         if (isAvailable(slot.StartTime, slot.EndTime)) {
@@ -511,7 +618,6 @@ export default function HomePage() {
                                                             roomStatus = "Opening Soon";
                                                         }
                                                     });
-
                                                     return (
                                                         /* Render information for each room, including room number and available time slots */
                                                         <div key={roomKey} className={`${styles.roomItem} ${styles.dashedLine}`}>
@@ -561,7 +667,6 @@ export default function HomePage() {
                             </div>
                         </details>
                     )}
-
                     {/* Libraries Section */}
                     {/* Checks if there are any libraries available in the groupedStudySpots data */}
                     {groupedStudySpots.library.length > 0 && (
@@ -573,7 +678,6 @@ export default function HomePage() {
                                     let libraryStatus = "Unavailable"; // Default status for the library
                                     let hasAvailable = false; // Flag to check if there's an available slot
                                     let hasOpeningSoon = false; // Flag to check if there's a slot opening soon
-
                                     // Iterate over each slot to determine library availability
                                     library.slots?.forEach((slot: Slot) => {
                                         if (isAvailable(slot.StartTime, slot.EndTime)) {
@@ -582,17 +686,35 @@ export default function HomePage() {
                                             hasOpeningSoon = true;
                                         }
                                     });
-
                                     // Update library status based on availability
                                     if (hasAvailable) {
                                         libraryStatus = "Available";
                                     } else if (hasOpeningSoon) {
                                         libraryStatus = "Opening Soon";
                                     }
-
                                     return (
                                         /* Render information for each library */
-                                        <div key={index} className={styles.libraryRow}>
+                                        <div 
+                                            key={index} 
+                                            className={styles.libraryRow}
+                                            onClick={() => {
+                                                // Recenter map to library location when clicked
+                                                if (mapRef.current && library.coords) {
+                                                    const [lng, lat] = library.coords;
+                                                    console.log(`Recentering map to library: ${library.building} at [${lng}, ${lat}]`);
+                                                    
+                                                    mapRef.current.flyTo({
+                                                        center: [lng, lat],
+                                                        zoom: 18, // Zoom in more when focusing on library
+                                                        duration: 1000, // 1 second animation
+                                                    });
+                                                    
+                                                    // Animate the marker
+                                                    const libraryId = library.location.join(", ");
+                                                    animateMarker(libraryId);
+                                                }
+                                            }}
+                                        >
                                             <div className={styles.libraryHeader}>
                                                 <span
                                                     className={
@@ -629,8 +751,7 @@ export default function HomePage() {
                         </details>
                     )}
                 </div>
-
-                {/* Map section - right on desktop, top on mobile */}
+                {/* Right section: Map */}
                 <div className={`${styles.right} ${isLoading ? styles.hiddenContainer : ''}`}>
                     <div ref={mapContainerRef} className={styles.map}></div>
                 </div>
