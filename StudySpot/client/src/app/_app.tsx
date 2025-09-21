@@ -6,7 +6,7 @@ import * as FullStory from "@fullstory/browser";
 function MyApp({ Component, pageProps }: AppProps) {
   useEffect(() => {
     // Only init FullStory in production
-    if (process.env.NODE_ENV === "production" && process.env.NEXT_PUBLIC_FS_ORG_ID) {
+    if (process.env.NEXT_PUBLIC_FS_ORG_ID) {
       FullStory.init({ orgId: process.env.NEXT_PUBLIC_FS_ORG_ID });
     }
   }, []);
