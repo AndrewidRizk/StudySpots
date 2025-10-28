@@ -6,7 +6,7 @@ export default function Header() {
     return (
         <header className={styles.header}>
             <h1 className={styles.title}>
-            <a href="https://study-spots-3fgv.vercel.app/">
+            <a href="/">
             <Image
                 src="/images/logo.png" // Path to your logo in the public folder
                 alt="Logo"
