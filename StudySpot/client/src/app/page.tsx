@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import styles from './styles/HomePage.module.css';
 import Header from './components/Header';
 import LoadingIndicator from './components/LoadingIndicator';
+import DevSettings from './components/DevSettings';
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Analytics } from "@vercel/analytics/react"
@@ -41,11 +42,14 @@ export default function HomePage() {
     const [userLocation, setUserLocation] = useState<{ latitude: number | null, longitude: number | null }>({ latitude: null, longitude: null });
     const mapContainerRef = useRef<HTMLDivElement | null>(null); // Reference for the map container
     const mapRef = useRef<mapboxgl.Map | null>(null); // Store map instacne
+    const userMarkerRef = useRef<mapboxgl.Marker | null>(null); // Store user location marker
     const [openBuildingId, setOpenBuildingId] = useState<string | null>(null); // Store building_code instead of index
     const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null); // Track which marker is currently selected for animation
     const selectedMarkerIdRef = useRef<string | null>(null);
     const animationTimeoutRef = useRef<number | null>(null);
     const retryTimeoutRef = useRef<number | null>(null);
+    const [devOverrideLocation, setDevOverrideLocation] = useState<{ latitude: number, longitude: number } | null>(null);
+    const [devOverrideTime, setDevOverrideTime] = useState<Date | null>(null);
     // Function to add pulsing animation to a marker
     const animateMarker = (markerId: string, delayMs: number = 0) => {
         // Remove animation from ALL marker dots to guarantee single pulse
@@ -163,7 +167,7 @@ export default function HomePage() {
     };
     // Function to get the current time in minutes
     const getCurrentTimeInMinutes = (): number => {
-        const now = new Date();
+        const now = devOverrideTime || new Date();
         return now.getHours() * 60 + now.getMinutes();
     };
     // function to sort the location based on the given location Lat and Lon
@@ -265,21 +269,27 @@ export default function HomePage() {
             return;
         }
         mapboxgl.accessToken = mapboxToken;
+        
+        // Determine effective location for map center
+        const effectiveLoc = devOverrideLocation || userLocation;
+        const centerLng = effectiveLoc.longitude || -79.503471;
+        const centerLat = effectiveLoc.latitude || 43.772861;
+        
         // Create map instance
         mapRef.current = new mapboxgl.Map({
             container: mapContainerRef.current as HTMLElement,
             style: "mapbox://styles/farism3/cmft09shw00a401s02j1d7xut", // Use custom dark style
-            center: [-79.503471, 43.772861], // Default to YorkU location if no user location
+            center: [centerLng, centerLat],
             zoom: 16.5,
             pitch: 60,
         });
         // Add user location marker
-        if (userLocation && userLocation.latitude && userLocation.longitude) {
+        if (effectiveLoc && effectiveLoc.latitude && effectiveLoc.longitude) {
             const userMarkerElement = document.createElement("div");
             userMarkerElement.className =
-                "h-3 w-3 border-[1.5px] border-white rounded-full bg-blue-500 shadow-[0px_0px_4px_2px_rgba(14,165,233,1)]";;
-            new mapboxgl.Marker(userMarkerElement)
-                .setLngLat([userLocation.longitude, userLocation.latitude])
+                "h-3 w-3 border-[1.5px] border-white rounded-full bg-blue-500 shadow-[0px_0px_4px_2px_rgba(14,165,233,1)];";;
+            userMarkerRef.current = new mapboxgl.Marker(userMarkerElement)
+                .setLngLat([effectiveLoc.longitude, effectiveLoc.latitude])
                 .addTo(mapRef.current);
         }
         // Add markers for buildings
@@ -386,11 +396,25 @@ export default function HomePage() {
             }
         });
         return () => {
+            if (userMarkerRef.current) {
+                userMarkerRef.current.remove();
+                userMarkerRef.current = null;
+            }
             if (mapRef.current) {
                 mapRef.current.remove(); // Only call if mapRef.current is not null
             }
         };
     }, [studySpots, userLocation]);
+    
+    // Update user marker when dev location changes
+    useEffect(() => {
+        if (!mapRef.current || !userMarkerRef.current) return;
+        
+        const effectiveLoc = devOverrideLocation || userLocation;
+        if (effectiveLoc && effectiveLoc.latitude && effectiveLoc.longitude) {
+            userMarkerRef.current.setLngLat([effectiveLoc.longitude, effectiveLoc.latitude]);
+        }
+    }, [devOverrideLocation, userLocation]);
     const handleFetchStudySpots = async () => {
         try {
             setIsLoading(true); // Set loading to true when fetch starts
@@ -523,11 +547,44 @@ export default function HomePage() {
         return grouped;
     };
     const groupedStudySpots = groupByType(studySpots); // Group study spots by type
-    // Sort groupedStudySpots by proximity using the user's current location
-    if (userLocation.latitude !== null && userLocation.longitude !== null) {
+    // Handlers for DevSettings
+    const handleDevLocationChange = (lat: number, lng: number) => {
+        setDevOverrideLocation({ latitude: lat, longitude: lng });
+        console.log('Dev location override set:', lat, lng);
+        
+        // Update map center if map exists
+        if (mapRef.current) {
+            mapRef.current.flyTo({
+                center: [lng, lat],
+                zoom: 16.5,
+                duration: 1000,
+            });
+        }
+    };
+
+    const handleDevTimeChange = (date: Date) => {
+        setDevOverrideTime(date);
+        console.log('Dev time override set:', date);
+        // Trigger re-fetch to recalculate availability
+        handleFetchStudySpots();
+    };
+
+    const handleDevReset = () => {
+        setDevOverrideLocation(null);
+        setDevOverrideTime(null);
+        console.log('Dev overrides reset');
+        // Trigger re-fetch to recalculate availability
+        handleFetchStudySpots();
+    };
+
+    // Determine effective location (override or actual)
+    const effectiveLocation = devOverrideLocation || userLocation;
+    
+    // Sort groupedStudySpots by proximity using the effective location
+    if (effectiveLocation.latitude !== null && effectiveLocation.longitude !== null) {
         sortStudySpotsByProximity(groupedStudySpots, {
-            latitude: userLocation.latitude,
-            longitude: userLocation.longitude,
+            latitude: effectiveLocation.latitude,
+            longitude: effectiveLocation.longitude,
         });
         console.log("Sort success.")
     }
@@ -541,6 +598,13 @@ export default function HomePage() {
             {/* Header component */}
             <Header />
             <Analytics />
+            
+            {/* Dev Settings Component */}
+            <DevSettings 
+                onLocationChange={handleDevLocationChange}
+                onTimeChange={handleDevTimeChange}
+                onReset={handleDevReset}
+            />
             
             {/* Loading component */}
             {isLoading && <LoadingIndicator />}
@@ -655,6 +719,7 @@ export default function HomePage() {
                                                                     dayEnd="22:00"
                                                                     showLabels={false}
                                                                     showNowIndicator={true}
+                                                                    currentTime={devOverrideTime || undefined}
                                                                 />
                                                             </div>
                                                         </div>

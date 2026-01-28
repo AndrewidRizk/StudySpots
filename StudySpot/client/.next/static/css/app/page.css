@@ -649,6 +649,240 @@
     }
 }
 
+/*!*************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[5].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[5].use[3]!./src/app/components/DevSettings.module.css ***!
+  \*************************************************************************************************************************************************************************************************************************************************************************************/
+.DevSettings_devSettings__lkAsH {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.DevSettings_toggleButton__5FaiC {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    transition: all 0.3s ease;
+}
+
+.DevSettings_toggleButton__5FaiC:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+}
+
+.DevSettings_panel__1li4e {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background: #1a1a2e;
+    border: 1px solid #2d2d44;
+    border-radius: 12px;
+    width: 400px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    animation: DevSettings_slideIn__F8g6b 0.3s ease;
+}
+
+@keyframes DevSettings_slideIn__F8g6b {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.DevSettings_header__wUQby {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #2d2d44;
+}
+
+.DevSettings_header__wUQby h3 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.DevSettings_closeButton___fy1B {
+    background: transparent;
+    border: none;
+    color: #888;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.DevSettings_closeButton___fy1B:hover {
+    background: #2d2d44;
+    color: #fff;
+}
+
+.DevSettings_content__RR5c8 {
+    padding: 20px;
+}
+
+.DevSettings_section__kBwoQ {
+    margin-bottom: 24px;
+}
+
+.DevSettings_section__kBwoQ h4 {
+    margin: 0 0 16px 0;
+    color: #a0a0c0;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.DevSettings_field__2s1M5 {
+    margin-bottom: 16px;
+}
+
+.DevSettings_field__2s1M5 label {
+    display: block;
+    margin-bottom: 6px;
+    color: #b0b0d0;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.DevSettings_field__2s1M5 input,
+.DevSettings_field__2s1M5 select {
+    width: 100%;
+    padding: 10px 12px;
+    background: #0f0f1e;
+    border: 1px solid #2d2d44;
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.DevSettings_field__2s1M5 input:focus,
+.DevSettings_field__2s1M5 select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.DevSettings_field__2s1M5 select {
+    cursor: pointer;
+}
+
+.DevSettings_field__2s1M5 select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.DevSettings_coordsRow__ksmRw {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.DevSettings_hint__tcz5y {
+    margin-top: 12px;
+    padding: 10px;
+    background: rgba(102, 126, 234, 0.1);
+    border-left: 3px solid #667eea;
+    border-radius: 4px;
+    color: #a0a0c0;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.DevSettings_nowButton__6UNJ1 {
+    width: 100%;
+    padding: 8px 12px;
+    background: #2d2d44;
+    border: 1px solid #3d3d54;
+    border-radius: 6px;
+    color: #b0b0d0;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 8px;
+}
+
+.DevSettings_nowButton__6UNJ1:hover {
+    background: #3d3d54;
+    color: #ffffff;
+}
+
+.DevSettings_actions__Fb5D1 {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #2d2d44;
+}
+
+.DevSettings_applyButton__1GCgj,
+.DevSettings_resetButton___sxyT {
+    flex: 1;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.DevSettings_applyButton__1GCgj {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.DevSettings_applyButton__1GCgj:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.DevSettings_resetButton___sxyT {
+    background: #2d2d44;
+    color: #b0b0d0;
+    border: 1px solid #3d3d54;
+}
+
+.DevSettings_resetButton___sxyT:hover {
+    background: #3d3d54;
+    color: #ffffff;
+}
+
+@media (max-width: 768px) {
+    .DevSettings_devSettings__lkAsH {
+        top: 60px;
+        right: 10px;
+    }
+
+    .DevSettings_panel__1li4e {
+        width: calc(100vw - 40px);
+        max-width: 400px;
+    }
+}
+
 /*!***************************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[13].oneOf[10].use[3]!./node_modules/mapbox-gl/dist/mapbox-gl.css ***!
   \***************************************************************************************************************************************************************************************************************************************************************************************/

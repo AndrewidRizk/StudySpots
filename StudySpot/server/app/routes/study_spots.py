@@ -1,7 +1,7 @@
 # backend/app/routes/study_spots.py
 
 from flask import Blueprint, jsonify
-from app.database import get_lecture_halls, get_cafes, get_libraries
+from app.database import get_lecture_halls, get_cafes, get_libraries, get_all_locations
 
 study_spots_bp = Blueprint('study_spots', __name__)
 
@@ -28,3 +28,15 @@ def fetch_study_spots():
         return jsonify(combined_data), 200  # Return combined data with HTTP status 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500  # Return an error response if something goes wrong
+
+@study_spots_bp.route('/locations/', methods=['GET'])
+@study_spots_bp.route('/locations', methods=['GET'])
+def fetch_locations():
+    """
+    Fetches all building locations for the dev form dropdown.
+    """
+    try:
+        locations = get_all_locations()
+        return jsonify(locations), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

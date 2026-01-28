@@ -322,3 +322,69 @@ def get_libraries():
     finally:
         close_connection(connection)
         print("Database connection closed.")  # Debugging log
+
+def get_all_locations():
+    """
+    Fetches all building locations (lecture halls, cafes, libraries) for dev form.
+    """
+    print("Starting get_all_locations function...")
+    
+    connection = create_connection()
+    if connection is None:
+        return []
+    
+    try:
+        cursor = connection.cursor(dictionary=True)
+        
+        # Query all buildings
+        query = """
+        SELECT 
+            building_name AS name,
+            building_code AS code,
+            ST_AsText(location) AS location,
+            'lecture_hall' AS type
+        FROM buildings
+        UNION ALL
+        SELECT 
+            name AS name,
+            '' AS code,
+            ST_AsText(location) AS location,
+            'cafe' AS type
+        FROM cafes
+        UNION ALL
+        SELECT 
+            name AS name,
+            '' AS code,
+            ST_AsText(location) AS location,
+            'library' AS type
+        FROM libraries
+        ORDER BY type, name;
+        """
+        
+        cursor.execute(query)
+        result = cursor.fetchall()
+        
+        def parse_location(location):
+            if location and location.startswith("POINT("):
+                coords = location[6:-1].split()
+                return [float(coords[0]), float(coords[1])]  # [lng, lat]
+            return None
+        
+        locations = []
+        for row in result:
+            loc = parse_location(row["location"])
+            if loc:
+                locations.append({
+                    "name": row["name"],
+                    "code": row["code"],
+                    "type": row["type"],
+                    "location": loc
+                })
+        
+        return locations
+    except Exception as e:
+        print(f"Error fetching locations: {e}")
+        return []
+    finally:
+        close_connection(connection)
+        print("All locations fetched, connection closed.")

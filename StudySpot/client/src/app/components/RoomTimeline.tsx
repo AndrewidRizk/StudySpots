@@ -16,6 +16,7 @@ interface RoomTimelineProps {
   dayEnd?: string;   // default 22:30
   showLabels?: boolean; // show start/end labels under the bar
   showNowIndicator?: boolean; // vertical dashed line for current time
+  currentTime?: Date; // optional override for current time (for dev settings)
 }
 
 const DEFAULT_START = "08:30";
@@ -54,6 +55,7 @@ export default function RoomTimeline({
   dayEnd = DEFAULT_END,
   showLabels = true,
   showNowIndicator = true,
+  currentTime,
 }: RoomTimelineProps) {
   const dayStartMin = toMinutes(dayStart);
   const dayEndMin = toMinutes(dayEnd);
@@ -81,7 +83,7 @@ export default function RoomTimeline({
   }, [freeIntervals, dayStartMin, dayEndMin]);
 
   // Now indicator position
-  const now = new Date();
+  const now = currentTime || new Date();
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
   const nowPosPct = ((clamp(nowMinutes, dayStartMin, dayEndMin) - dayStartMin) / daySpan) * 100;
   const showNow = showNowIndicator && nowMinutes >= dayStartMin && nowMinutes <= dayEndMin;
