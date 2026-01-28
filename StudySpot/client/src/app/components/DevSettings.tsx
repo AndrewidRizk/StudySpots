@@ -14,9 +14,10 @@ interface DevSettingsProps {
     onLocationChange: (lat: number, lng: number) => void;
     onTimeChange: (date: Date) => void;
     onReset: () => void;
+    isVisible?: boolean;
 }
 
-export default function DevSettings({ onLocationChange, onTimeChange, onReset }: DevSettingsProps) {
+export default function DevSettings({ onLocationChange, onTimeChange, onReset, isVisible = true }: DevSettingsProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [locations, setLocations] = useState<Location[]>([]);
     const [selectedLocation, setSelectedLocation] = useState<string>('');
@@ -106,12 +107,14 @@ export default function DevSettings({ onLocationChange, onTimeChange, onReset }:
 
     return (
         <div className={styles.devSettings}>
-            <button 
-                className={styles.toggleButton}
-                onClick={() => setIsOpen(!isOpen)}
-            >
-                🛠️ Dev Settings
-            </button>
+            {isVisible && (
+                <button 
+                    className={styles.toggleButton}
+                    onClick={() => setIsOpen(!isOpen)}
+                >
+                    🛠️ Dev Settings
+                </button>
+            )}
 
             {isOpen && (
                 <div className={styles.panel}>

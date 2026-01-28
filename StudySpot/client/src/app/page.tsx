@@ -50,6 +50,7 @@ export default function HomePage() {
     const retryTimeoutRef = useRef<number | null>(null);
     const [devOverrideLocation, setDevOverrideLocation] = useState<{ latitude: number, longitude: number } | null>(null);
     const [devOverrideTime, setDevOverrideTime] = useState<Date | null>(null);
+    const [showDevSettings, setShowDevSettings] = useState(false);
     // Function to add pulsing animation to a marker
     const animateMarker = (markerId: string, delayMs: number = 0) => {
         // Remove animation from ALL marker dots to guarantee single pulse
@@ -104,6 +105,19 @@ export default function HomePage() {
     useEffect(() => {
         selectedMarkerIdRef.current = selectedMarkerId;
     }, [selectedMarkerId]);
+    // Keyboard shortcut to toggle dev settings (press 'd')
+    useEffect(() => {
+        const handleKeyPress = (e: KeyboardEvent) => {
+            // Only trigger if not typing in an input field
+            if (e.key === 'd' && !['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) {
+                setShowDevSettings(prev => !prev);
+            }
+        };
+        
+        window.addEventListener('keydown', handleKeyPress);
+        return () => window.removeEventListener('keydown', handleKeyPress);
+    }, []);
+    
     // Add CSS animation keyframes to document head
     useEffect(() => {
         const style = document.createElement('style');
@@ -604,6 +618,7 @@ export default function HomePage() {
                 onLocationChange={handleDevLocationChange}
                 onTimeChange={handleDevTimeChange}
                 onReset={handleDevReset}
+                isVisible={showDevSettings}
             />
             
             {/* Loading component */}
